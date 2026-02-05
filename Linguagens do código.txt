@@ -1,0 +1,5 @@
+Resumo: 
+
+HTML: para a estrutura.
+CSS: para o estilo.
+JavaScript: para a funcionalidade dinâmica.
