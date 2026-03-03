@@ -1,524 +1,423 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contagem Regressiva para Feriados</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-
+    <!-- Modern Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@300;400;500&display=swap"
+        rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; }<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contagem Regressiva para Feriados</title>
+        :root {
+            --primary: #6a7dff;
+            --secondary: #4c5edb;
+            --accent: #ff6347;
+            --bg-dark: rgba(0, 0, 0, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
 
-    <!-- Adicionando fontes modernas do Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-
-    <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body, html {
-            height: 100%;  /* Garantir que o corpo e o html ocupem 100% da altura da tela */
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         .image-container {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;  /* A imagem fica atrás do conteúdo */
+            z-index: -1;
         }
 
         .image-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* A imagem cobre toda a tela sem distorcer */
+            object-fit: cover;
+            filter: brightness(0.6);
         }
 
         body {
-            font-family: 'Roboto', sans-serif; /* Usando a fonte 'Roboto' para o corpo */
-            text-align: center;
+            font-family: 'Roboto', sans-serif;
             color: #fff;
-            height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
-            overflow: hidden;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
         }
 
         h2 {
-            font-family: 'Poppins', sans-serif;  /* Usando 'Poppins' para o título */
-            color: #fff;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-         
-        h3 {
-            font-family: 'Roboto', sans-serif;
-            color: #fff;
-            font-size: 1.5rem;
-            margin-bottom: 30px;
-            text-transform: capitalize;
-            font-weight: 400;
+            font-weight: 300;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
         }
 
-        /* Estilo para os botões de ano no topo */
         .year-nav {
             display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
         }
 
-        .year-nav button {
-            font-size: 1.2rem;
-            padding: 12px 25px;
-            background: linear-gradient(145deg, #6a7dff, #4c5edb); /* Gradiente moderno */
+        button {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            padding: 12px 28px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: white;
-            border: none;
+            border: 1px solid var(--glass-border);
             cursor: pointer;
-            border-radius: 25px;
-            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease;
+            border-radius: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .year-nav button:hover {
-            background: linear-gradient(145deg, #4c5edb, #6a7dff); /* Inverte o gradiente ao passar o mouse */
+        button:hover {
+            background: var(--primary);
             transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+            box-shadow: 0 10px 20px rgba(106, 125, 255, 0.3);
+            border-color: transparent;
         }
 
-        .year-nav button:active {
-            transform: translateY(2px);
-            background: #3a4ea1; /* Cor mais escura quando ativo */
+        button.active {
+            background: var(--primary);
+            box-shadow: 0 5px 15px rgba(106, 125, 255, 0.4);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
         }
 
         .holiday-list {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 30px;
+            display: none;
             width: 100%;
-            max-width: 600px;
-            overflow-y: auto;
-            max-height: 60vh;
-            margin-bottom: 20px;
-            display: none;  /* A lista de feriados começa oculta */
+            animation: fadeIn 0.5s ease;
+        }
+
+        .holiday-list.active {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .holiday-item {
-            background-color: rgba(0, 0, 0, 0.6);
-            margin: 10px 0;
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            border-radius: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .holiday-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .holiday-info {
+            text-align: left;
         }
 
         .holiday-name {
             font-size: 1.4rem;
             font-weight: 600;
-            text-align: left;
+            font-family: 'Poppins', sans-serif;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .holiday-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
         }
 
         .countdown {
-            font-size: 1.2rem;
-            color: #ff6347;
-            font-weight: bold;
+            text-align: right;
+            min-width: 200px;
         }
 
-        button {
-            font-size: 1.1rem;
-            padding: 12px 25px;
-            background: linear-gradient(145deg, #6a7dff, #4c5edb); /* Gradiente moderno */
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 25px;
-            margin-left: 10px;
-            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease;
+        .timer {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent);
+            font-weight: 600;
+            display: block;
         }
-        
-        button:hover {
-            background: linear-gradient(145deg, #4c5edb, #6a7dff); /* Inverte o gradiente ao passar o mouse */
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
-        }
-        
-        button:active {
-            transform: translateY(2px);
-            background: #3a4ea1; /* Cor mais escura quando ativo */
+
+        .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .controls {
-            margin-top: 30px;
-            display: none; /* Inicialmente oculto */
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
-        }
-
-        .back-button {
-            margin-left: 10px;
         }
 
         hr {
-            width: 60%;
-            border-color: #ff6347;
-            margin: 20px 0;
+            width: 100px;
+            border: none;
+            height: 4px;
+            background: var(--accent);
+            margin: 0 auto 30px;
+            border-radius: 2px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .holiday-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .holiday-info {
+                text-align: center;
+            }
+
+            .countdown {
+                text-align: center;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <h2>Contagem Regressiva.com</h2> <!-- Alterei o nome exibido na página -->
-    <h3>Ferramentas e Aplicativos Online</h3> <!-- Adicionei o subtítulo abaixo do nome -->
-
-    <!-- Container para a imagem de fundo -->
     <div class="image-container">
-        <img src="C:/Users/pablo/OneDrive/Área de Trabalho/Progeto Contágem regressiva/.vscode/Images/minha-imagem.jpg" alt="Imagem de Contagem Regressiva">
+        <img src="images/background.jpg" alt="Background">
     </div>
+
+    <header>
+        <h1>Contagem Regressiva</h1>
+        <h2>Ferramentas e Aplicativos Online</h2>
+    </header>
 
     <hr>
 
-    <!-- Botões superiores para selecionar o calendário -->
     <div class="year-nav">
-        <button onclick="filterHolidaysByYear(2024)">Calendário 2024</button> <!-- Botão "Calendário 2024" -->
-        <button onclick="filterHolidaysByYear(2024)">2024</button>
-        <button onclick="filterHolidaysByYear(2025)">2025</button>
-        <button onclick="filterHolidaysByYear(2026)">2026</button>
-        <button onclick="filterHolidaysByYear(2027)">2027</button>
+        <button onclick="changeYear(2024)" id="btn-2024">2024</button>
+        <button onclick="changeYear(2025)" id="btn-2025">2025</button>
+        <button onclick="changeYear(2026)" id="btn-2026">2026</button>
+        <button onclick="changeYear(2027)" id="btn-2027">2027</button>
     </div>
 
-    <!-- Lista de feriados -->
-    <div id="holidays-2024" class="holiday-list"></div>
-    <div id="holidays-2025" class="holiday-list"></div>
-    <div id="holidays-2026" class="holiday-list"></div>
-    <div id="holidays-2027" class="holiday-list"></div>
+    <div class="container" id="holiday-container">
+        <!-- Holiday lists will be injected here -->
+    </div>
 
-    <!-- Controles para controlar a contagem -->
     <div class="controls">
-        <button onclick="startCountdown()">Iniciar</button>
-        <button onclick="pauseCountdown()">Pausar</button>
-        <button onclick="resetCountdown()">Resetar</button>
-        <!-- Botão de Voltar dentro dos controles -->
-        <div class="back-button">
-            <button onclick="goBack()">Voltar</button>
-        </div>
+        <button onclick="startAll()">Iniciar Tudo</button>
+        <button onclick="pauseAll()">Pausar</button>
+        <button onclick="resetAll()">Resetar</button>
     </div>
 
     <script>
-        // Dados de feriados por ano
-        const holidaysByYear = {
+        const holidaysData = {
             2024: [
-                { date: '2024-01-01', name: 'Ano Novo', link: 'https://brasilescola.uol.com.br/datas-comemorativas/reveillon.htm/' },
-                { date: '2024-04-21', name: 'Tiradentes', link: 'https://brasilescola.uol.com.br/curiosidades/21-de-abril-e-feriado-ou-ponto-facultativo.htm' },
-                { date: '2024-05-01', name: 'Dia do Trabalho', link: 'https://brasilescola.uol.com.br/datas-comemorativas/dia-do-trabalho.htm' },
-                { date: '2024-09-07', name: 'Independência do Brasil', link: 'https://brasilescola.uol.com.br/historiab/independencia-brasil.htm' },
-                { date: '2024-10-12', name: 'Nossa Senhora Aparecida', link: 'https://brasilescola.uol.com.br/religiao/nossa-senhora-aparecida.htm' },
-                { date: '2024-11-02', name: 'Finados', link: 'https://brasilescola.uol.com.br/religiao/dia-de-finados.htm' }
+                { name: 'Ano Novo', date: '2024-01-01' },
+                { name: 'Carnaval', date: '2024-02-13' },
+                { name: 'Sexta-feira Santa', date: '2024-03-29' },
+                { name: 'Tiradentes', date: '2024-04-21' },
+                { name: 'Dia do Trabalho', date: '2024-05-01' },
+                { name: 'Corpus Christi', date: '2024-05-30' },
+                { name: 'Independência', date: '2024-09-07' },
+                { name: 'Nossa Srª Aparecida', date: '2024-10-12' },
+                { name: 'Finados', date: '2024-11-02' },
+                { name: 'Proclamação da República', date: '2024-11-15' },
+                { name: 'Consciência Negra', date: '2024-11-20' },
+                { name: 'Natal', date: '2024-12-25' }
             ],
             2025: [
-                { date: '2025-01-01', name: 'Ano Novo', link: 'https://brasilescola.uol.com.br/datas-comemorativas/reveillon.htm/' },
-                { date: '2025-04-21', name: 'Tiradentes', link: 'https://brasilescola.uol.com.br/curiosidades/21-de-abril-e-feriado-ou-ponto-facultativo.htm' },
-                { date: '2025-05-01', name: 'Dia do Trabalho', link: 'https://brasilescola.uol.com.br/datas-comemorativas/dia-do-trabalho.htm' },
-                { date: '2025-09-07', name: 'Independência do Brasil', link: 'https://brasilescola.uol.com.br/historiab/independencia-brasil.htm' },
-                { date: '2025-10-12', name: 'Nossa Senhora Aparecida', link: 'https://brasilescola.uol.com.br/religiao/nossa-senhora-aparecida.htm' }
+                { name: 'Ano Novo', date: '2025-01-01' },
+                { name: 'Carnaval', date: '2025-03-04' },
+                { name: 'Sexta-feira Santa', date: '2025-04-18' },
+                { name: 'Tiradentes', date: '2025-04-21' },
+                { name: 'Dia do Trabalho', date: '2025-05-01' },
+                { name: 'Corpus Christi', date: '2025-06-19' },
+                { name: 'Independência', date: '2025-09-07' },
+                { name: 'Nossa Srª Aparecida', date: '2025-10-12' },
+                { name: 'Finados', date: '2025-11-02' },
+                { name: 'Proclamação da República', date: '2025-11-15' },
+                { name: 'Consciência Negra', date: '2025-11-20' },
+                { name: 'Natal', date: '2025-12-25' }
             ],
             2026: [
-                { date: '2026-01-01', name: 'Ano Novo', link: 'https://brasilescola.uol.com.br/datas-comemorativas/reveillon.htm/' },
-                { date: '2026-04-21', name: 'Tiradentes', link: 'https://brasilescola.uol.com.br/curiosidades/21-de-abril-e-feriado-ou-ponto-facultativo.htm' },
-                { date: '2026-05-01', name: 'Dia do Trabalho', link: 'https://brasilescola.uol.com.br/datas-comemorativas/dia-do-trabalho.htm' },
-                { date: '2026-09-07', name: 'Independência do Brasil', link: 'https://brasilescola.uol.com.br/historiab/independencia-brasil.htm' },
-                { date: '2026-10-12', name: 'Nossa Senhora Aparecida', link: 'https://brasilescola.uol.com.br/religiao/nossa-senhora-aparecida.htm' }
+                { name: 'Ano Novo', date: '2026-01-01' },
+                { name: 'Carnaval', date: '2026-02-17' },
+                { name: 'Tiradentes', date: '2026-04-21' },
+                { name: 'Dia do Trabalho', date: '2026-05-01' },
+                { name: 'Independência', date: '2026-09-07' },
+                { name: 'Nossa Srª Aparecida', date: '2026-10-12' },
+                { name: 'Natal', date: '2026-12-25' }
             ],
             2027: [
-                { date: '2027-01-01', name: 'Ano Novo', link: 'https://brasilescola.uol.com.br/datas-comemorativas/reveillon.htm/' },
-                { date: '2027-04-21', name: 'Tiradentes', link: 'https://brasilescola.uol.com.br/curiosidades/21-de-abril-e-feriado-ou-ponto-facultativo.htm' },
-                { date: '2027-05-01', name: 'Dia do Trabalho', link: 'https://brasilescola.uol.com.br/datas-comemorativas/dia-do-trabalho.htm' },
-                { date: '2027-09-07', name: 'Independência do Brasil', link: 'https://brasilescola.uol.com.br/historiab/independencia-brasil.htm' },
-                { date: '2027-10-12', name: 'Nossa Senhora Aparecida', link: 'https://brasilescola.uol.com.br/religiao/nossa-senhora-aparecida.htm' }
+                { name: 'Ano Novo', date: '2027-01-01' },
+                { name: 'Carnaval', date: '2027-02-09' },
+                { name: 'Tiradentes', date: '2027-04-21' },
+                { name: 'Dia do Trabalho', date: '2027-05-01' },
+                { name: 'Independência', date: '2027-09-07' },
+                { name: 'Nossa Srª Aparecida', date: '2027-10-12' },
+                { name: 'Natal', date: '2027-12-25' }
             ]
         };
 
-        let countdownIntervals = {}; // Armazenar os intervalos para controlar a pausa
+        let intervals = {};
+        let currentYear = new Date().getFullYear();
+        if (!holidaysData[currentYear]) currentYear = 2024;
 
-        // Função para filtrar os feriados do ano selecionado
-        function filterHolidaysByYear(year) {
-            // Ocultar todos os anos
-            const allHolidayLists = document.querySelectorAll('.holiday-list');
-            allHolidayLists.forEach(list => list.style.display = 'none');
-            
-            // Mostrar apenas o ano selecionado
-            const selectedHolidayList = document.getElementById(`holidays-${year}`);
-            selectedHolidayList.style.display = 'block';
-            selectedHolidayList.innerHTML = '';  // Limpa a lista existente
+        function init() {
+            const container = document.getElementById('holiday-container');
 
-            // Carregar os feriados do ano selecionado
-            const holidays = holidaysByYear[year];
-            holidays.forEach(holiday => {
-                const li = document.createElement('div');
-                li.classList.add('holiday-item');
-                const holidayDate = new Date(holiday.date);
-                li.innerHTML = `
-                    <span class="holiday-name">${holiday.name}</span>
-                    <span class="holiday-date">${holidayDate.toLocaleDateString()}</span>
-                    <a href="${holiday.link}" target="_blank">Mais informações</a>
-                    <span class="countdown" id="countdown-${holiday.name}"></span>
-                `;
-                selectedHolidayList.appendChild(li);
+            Object.keys(holidaysData).forEach(year => {
+                const list = document.createElement('div');
+                list.id = `list-${year}`;
+                list.className = 'holiday-list';
 
-                // Atualiza a contagem regressiva
-                updateCountdown(holidayDate, holiday.name);
+                holidaysData[year].forEach((holiday, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'holiday-item';
+                    item.innerHTML = `
+                        <div class="holiday-info">
+                            <span class="holiday-name">${holiday.name}</span>
+                            <span class="holiday-date">${formatDate(holiday.date)}</span>
+                        </div>
+                        <div class="countdown">
+                            <span class="label">Faltam</span>
+                            <span class="timer" id="timer-${year}-${idx}">--d --h --m --s</span>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+
+                container.appendChild(list);
             });
 
-            // Mostrar os controles após o ano ser selecionado
-            document.querySelector('.controls').style.display = 'flex'; // Torna os controles visíveis
+            changeYear(2025); // Start with 2025 as it's the closest/future for some
         }
 
-        // Função para calcular e atualizar a contagem regressiva
-        function updateCountdown(holidayDate, holidayName) {
-            const countdownElement = document.getElementById(`countdown-${holidayName}`);
-            const interval = setInterval(function() {
-                const now = new Date();
-                const timeDiff = holidayDate - now;
-
-                if (timeDiff <= 0) {
-                    clearInterval(interval);
-                    countdownElement.textContent = "Feriado chegou!";
-                } else {
-                    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-                    countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                }
-            }, 1000);
-            countdownIntervals[holidayName] = interval; // Salva o intervalo para controle
+        function formatDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
         }
 
-        // Funções para controlar a contagem
-        function startCountdown() {
-            Object.values(countdownIntervals).forEach(interval => {
-                clearInterval(interval);  // Limpa todos os intervalos anteriores
-            });
+        function changeYear(year) {
+            currentYear = year;
+            document.querySelectorAll('.holiday-list').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.year-nav button').forEach(b => b.classList.remove('active'));
 
-            // Reinicia todas as contagens
-            const holidayList = document.querySelectorAll('.holiday-item');
-            holidayList.forEach(item => {
-                const holidayName = item.querySelector('.holiday-name').textContent;
-                const holidayDate = new Date(item.querySelector('.holiday-date').textContent);
-                updateCountdown(holidayDate, holidayName);
-            });
+            document.getElementById(`list-${year}`).classList.add('active');
+            document.getElementById(`btn-${year}`).classList.add('active');
+
+            startAll();
         }
 
-        function pauseCountdown() {
-            // Limpa todos os intervalos de contagem regressiva
-            Object.values(countdownIntervals).forEach(interval => {
-                clearInterval(interval);
-            });
+        function updateTimer(year, idx) {
+            const target = new Date(holidaysData[year][idx].date + 'T00:00:00');
+            const now = new Date();
+            const diff = target - now;
+            const el = document.getElementById(`timer-${year}-${idx}`);
+
+            if (diff <= 0) {
+                el.textContent = "Hoje é o dia!";
+                el.style.color = "#4CAF50";
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            el.textContent = `${d}d ${h}h ${m}s ${s}s`;
         }
 
-        function resetCountdown() {
-            // Limpa todos os intervalos de contagem regressiva e reinicia
-            pauseCountdown();
-            const holidayList = document.querySelectorAll('.holiday-item');
-            holidayList.forEach(item => {
-                const countdownElement = item.querySelector('.countdown');
-                countdownElement.textContent = ''; // Limpa a contagem na tela
+        function startAll() {
+            pauseAll();
+            holidaysData[currentYear].forEach((_, idx) => {
+                const key = `${currentYear}-${idx}`;
+                updateTimer(currentYear, idx);
+                intervals[key] = setInterval(() => updateTimer(currentYear, idx), 1000);
             });
         }
 
-        // Função do botão Voltar
-        function goBack() {
-            location.reload();  // Volta para a página anterior
-        }
-    </script>
-
-</body>
-</html>
-
-        .image-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
-        .image-container img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-        body {
-            font-family: 'Roboto', sans-serif; text-align: center; color: #fff;
-            height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 20px; overflow: hidden;
-        }
-        h2 {
-            font-family: 'Poppins', sans-serif; color: #fff;
-            font-size: 2.5rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;
-        }
-        h3 {
-            font-family: 'Roboto', sans-serif; color: #fff;
-            font-size: 1.5rem; margin-bottom: 30px; text-transform: capitalize; font-weight: 400;
-        }
-        .year-nav {
-            display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
-        }
-        .year-nav button, button {
-            font-size: 1.2rem; padding: 12px 25px;
-            background: linear-gradient(145deg, #6a7dff, #4c5edb);
-            color: white; border: none; cursor: pointer; border-radius: 25px;
-            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease;
-        }
-        .year-nav button:hover, button:hover {
-            background: linear-gradient(145deg, #4c5edb, #6a7dff);
-            transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        .year-nav button:active, button:active {
-            transform: translateY(2px); background: #3a4ea1;
-        }
-        .holiday-list {
-            list-style-type: none; padding: 0; margin-top: 30px;
-            width: 100%; max-width: 600px; overflow-y: auto;
-            max-height: 60vh; margin-bottom: 20px; display: none;
-        }
-        .holiday-item {
-            background-color: rgba(0, 0, 0, 0.6); margin: 10px 0; padding: 20px;
-            border-radius: 15px; color: white; display: flex;
-            flex-direction: column; gap: 10px; align-items: flex-start;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .holiday-item:hover {
-            transform: translateY(-5px); box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
-        }
-        .holiday-name { font-size: 1.4rem; font-weight: 600; }
-        .countdown { font-size: 1.2rem; color: #ff6347; font-weight: bold; }
-        .controls {
-            margin-top: 30px; display: none; justify-content: center; align-items: center;
-        }
-        .back-button { margin-left: 10px; }
-        hr { width: 60%; border-color: #ff6347; margin: 20px 0; }
-    </style>
-</head>
-<body>
-    <h2>Contagem Regressiva.com</h2>
-    <h3>Ferramentas e Aplicativos Online</h3>
-
-    <div class="image-container">
-        <img src="images/background.jpg" alt="Imagem de Contagem Regressiva">
-    </div>
-
-    <hr>
-    <div class="year-nav">
-        <button onclick="filterHolidaysByYear(2024)">2024</button>
-        <button onclick="filterHolidaysByYear(2025)">2025</button>
-        <button onclick="filterHolidaysByYear(2026)">2026</button>
-        <button onclick="filterHolidaysByYear(2027)">2027</button>
-    </div>
-
-    <div id="holidays-2024" class="holiday-list"></div>
-    <div id="holidays-2025" class="holiday-list"></div>
-    <div id="holidays-2026" class="holiday-list"></div>
-    <div id="holidays-2027" class="holiday-list"></div>
-
-    <div class="controls">
-        <button onclick="startCountdown()">Iniciar</button>
-        <button onclick="pauseCountdown()">Pausar</button>
-        <button onclick="resetCountdown()">Resetar</button>
-        <div class="back-button">
-            <button onclick="goBack()">Voltar</button>
-        </div>
-    </div>
-
-    <script>
-        const holidaysByYear = {
-            2024: [{ date: '2024-01-01', name: 'AnoNovo' }, { date: '2024-04-21', name: 'Tiradentes' }],
-            2025: [{ date: '2025-01-01', name: 'AnoNovo' }, { date: '2025-04-21', name: 'Tiradentes' }],
-            2026: [{ date: '2026-01-01', name: 'AnoNovo' }, { date: '2026-04-21', name: 'Tiradentes' }],
-            2027: [{ date: '2027-01-01', name: 'AnoNovo' }, { date: '2027-04-21', name: 'Tiradentes' }]
-        };
-
-        let countdownIntervals = {};
-
-        function filterHolidaysByYear(year) {
-            document.querySelectorAll('.holiday-list').forEach(list => list.style.display = 'none');
-            const selectedList = document.getElementById(`holidays-${year}`);
-            selectedList.style.display = 'block';
-            selectedList.innerHTML = '';
-
-            holidaysByYear[year].forEach(holiday => {
-                const li = document.createElement('div');
-                li.classList.add('holiday-item');
-                const date = new Date(holiday.date);
-                li.innerHTML = `
-                    <span class="holiday-name">${holiday.name}</span>
-                    <span class="holiday-date" data-date="${holiday.date}">${date.toLocaleDateString()}</span>
-                    <span class="countdown" id="countdown-${holiday.name}"></span>
-                `;
-                selectedList.appendChild(li);
-                updateCountdown(date, holiday.name);
-            });
-
-            document.querySelector('.controls').style.display = 'flex';
+        function pauseAll() {
+            Object.values(intervals).forEach(clearInterval);
+            intervals = {};
         }
 
-        function updateCountdown(date, name) {
-            const el = document.getElementById(`countdown-${name}`);
-            const interval = setInterval(() => {
-                const now = new Date();
-                const diff = date - now;
-                if (diff <= 0) {
-                    clearInterval(interval);
-                    el.textContent = "Feriado chegou!";
-                } else {
-                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    el.textContent = `${d}d ${h}h ${m}m ${s}s`;
-                }
-            }, 1000);
-            countdownIntervals[name] = interval;
+        function resetAll() {
+            pauseAll();
+            document.querySelectorAll('.timer').forEach(el => el.textContent = '--d --h --m --s');
         }
 
-        function startCountdown() {
-            Object.values(countdownIntervals).forEach(clearInterval);
-            document.querySelectorAll('.holiday-item').forEach(item => {
-                const name = item.querySelector('.holiday-name').textContent;
-                const date = new Date(item.querySelector('.holiday-date').dataset.date);
-                updateCountdown(date, name);
-            });
-        }
-
-        function pauseCountdown() {
-            Object.values(countdownIntervals).forEach(clearInterval);
-        }
-
-        function resetCountdown() {
-            pauseCountdown();
-            document.querySelectorAll('.countdown').forEach(el => el.textContent = '');
-        }
-
-        function goBack() {
-            location.reload();
-        }
+        window.onload = init;
     </script>
 </body>
+
 </html>
