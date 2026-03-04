@@ -149,14 +149,25 @@ class HolidayApp {
         const [y, m, d] = holiday.date.split('-');
         const target = new Date(y, m - 1, d);
         const now = new Date();
+
+        // Reset time for date comparison
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const holidayDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+
         const diff = target - now;
         const el = document.getElementById(`timer-${year}-${idx}`);
 
         if (!el) return;
 
-        if (diff <= 0) {
-            el.textContent = "Hoje é o dia!";
+        if (holidayDate.getTime() === today.getTime()) {
+            el.textContent = "É hoje! 🎉";
             el.style.color = "#4CAF50";
+            return;
+        }
+
+        if (diff < 0) {
+            el.textContent = "Já passou";
+            el.style.color = "rgba(255, 255, 255, 0.4)";
             return;
         }
 
@@ -166,7 +177,9 @@ class HolidayApp {
         const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
         el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
+        el.style.color = "var(--accent)";
     }
+
 
     /**
      * Start countdowns for the current year.
