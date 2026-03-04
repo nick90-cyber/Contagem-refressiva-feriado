@@ -97,9 +97,26 @@ class HolidayApp {
         const list = document.createElement('div');
         list.className = 'holiday-list active';
 
-        this.holidaysCache[year].forEach((holiday, idx) => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const holidays = this.holidaysCache[year];
+        let featuredFound = false;
+
+        holidays.forEach((holiday, idx) => {
+            const [y, m, d] = holiday.date.split('-');
+            const holidayDate = new Date(y, m - 1, d);
+
+            let extraClass = '';
+            // Only feature the first upcoming holiday
+            if (!featuredFound && holidayDate >= today) {
+                extraClass = 'featured';
+                featuredFound = true;
+            }
+
             const item = document.createElement('div');
-            item.className = 'holiday-item';
+            item.className = `holiday-item ${extraClass}`;
+            item.style.animationDelay = `${idx * 0.08}s`;
+
             item.innerHTML = `
                 <div class="holiday-info">
                     <span class="holiday-name">${holiday.name}</span>
@@ -241,6 +258,13 @@ class HolidayApp {
 
         el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
         el.style.color = "var(--accent)";
+
+        // Micro-interaction: pulse if less than 24 hours
+        if (diff > 0 && diff < 86400000) {
+            el.classList.add('pulse');
+        } else {
+            el.classList.remove('pulse');
+        }
     }
 
 

@@ -4,7 +4,8 @@
     --accent: #ff6347;
     --bg-dark: rgba(0, 0, 0, 0.7);
     --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --featured-bg: rgba(255, 99, 71, 0.15);
 }
 
 * {
@@ -195,12 +196,51 @@ button.active {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    position: relative;
+}
+
+/* Featured Holiday Highlight */
+.holiday-item.featured {
+    background: var(--featured-bg);
+    border: 2px solid var(--accent);
+    padding: 35px 40px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 40px rgba(255, 99, 71, 0.2);
+    transform: scale(1.02);
+}
+
+.holiday-item.featured .holiday-name {
+    font-size: 2rem;
+    color: var(--accent);
+}
+
+.holiday-item.featured .timer {
+    font-size: 1.8rem;
+    text-shadow: 0 0 15px rgba(255, 99, 71, 0.4);
+}
+
+.holiday-item.featured::before {
+    content: "PRÓXIMO FERIADO";
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--accent);
+    color: white;
+    padding: 2px 12px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .holiday-item:hover {
-    transform: scale(1.02);
+    transform: translateY(-5px) scale(1.02);
     background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .holiday-info {
@@ -293,6 +333,34 @@ hr {
 
     to {
         opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.timer.pulse {
+    animation: pulseTimer 1.5s infinite alternate;
+}
+
+@keyframes pulseTimer {
+    from {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    to {
+        transform: scale(1.05);
+        filter: brightness(1.3);
     }
 }
 
