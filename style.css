@@ -68,6 +68,68 @@ h2 {
     letter-spacing: 1px;
 }
 
+/* Search Styles */
+.search-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 10px 15px;
+    width: 50px;
+    height: 50px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.search-container.active {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.search-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--accent);
+    transition: transform 0.3s ease;
+}
+
+.search-container.active .search-icon {
+    transform: rotate(90deg);
+}
+
+#search-input {
+    background: none;
+    border: none;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    margin-left: 15px;
+    width: 200px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.search-container.active #search-input {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#search-input:focus {
+    outline: none;
+}
+
 .year-nav {
     display: flex;
     gap: 15px;

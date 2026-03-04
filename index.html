@@ -26,11 +26,23 @@
 
     <hr>
 
+    <div class="search-wrapper">
+        <div class="search-container" id="search-container">
+            <svg class="search-icon" onclick="app.toggleSearch()" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="Buscar feriado..."
+                oninput="app.filterHolidays(this.value)">
+        </div>
+    </div>
+
     <nav class="year-nav">
-        <button onclick="changeYear(2024)" id="btn-2024">2024</button>
-        <button onclick="changeYear(2025)" id="btn-2025">2025</button>
-        <button onclick="changeYear(2026)" id="btn-2026">2026</button>
-        <button onclick="changeYear(2027)" id="btn-2027">2027</button>
+        <button id="btn-2024">2024</button>
+        <button id="btn-2025">2025</button>
+        <button id="btn-2026">2026</button>
+        <button id="btn-2027">2027</button>
     </nav>
 
     <main class="container" id="holiday-container">

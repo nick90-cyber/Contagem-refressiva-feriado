@@ -36,6 +36,8 @@ class HolidayApp {
         this.currentYear = new Date().getFullYear();
 
         this.container = document.getElementById('holiday-container');
+        this.searchInput = document.getElementById('search-input');
+        this.searchContainer = document.getElementById('search-container');
         this.init();
     }
 
@@ -127,9 +129,70 @@ class HolidayApp {
     /**
      * Switch the visible year.
      */
+    /**
+     * Switch the visible year.
+     */
     async changeYear(year) {
         if (this.currentYear === year && this.holidaysCache[year]) return;
+        this.clearSearch();
         await this.loadYear(year);
+    }
+
+    /**
+     * Toggle search bar visibility.
+     */
+    toggleSearch() {
+        this.searchContainer.classList.toggle('active');
+        if (this.searchContainer.classList.contains('active')) {
+            this.searchInput.focus();
+        } else {
+            this.clearSearch();
+        }
+    }
+
+    /**
+     * Clear search input and filter.
+     */
+    clearSearch() {
+        if (this.searchInput) {
+            this.searchInput.value = '';
+            this.filterHolidays('');
+        }
+    }
+
+    /**
+     * Filter holidays based on search query.
+     */
+    filterHolidays(query) {
+        const queryNorm = query.toLowerCase().trim();
+        const items = document.querySelectorAll('.holiday-item');
+
+        items.forEach((item, idx) => {
+            const holidayName = this.holidaysCache[this.currentYear][idx].name.toLowerCase();
+            if (holidayName.includes(queryNorm)) {
+                item.style.display = 'flex';
+                item.style.animation = 'fadeIn 0.3s ease forwards';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Show message if no results found
+        let noResults = document.querySelector('.no-results-msg');
+        const visibleItems = Array.from(items).filter(i => i.style.display !== 'none');
+
+        if (visibleItems.length === 0) {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.className = 'status-msg no-results-msg';
+                noResults.textContent = `Nenhum feriado encontrado para "${query}"`;
+                this.container.appendChild(noResults);
+            } else {
+                noResults.textContent = `Nenhum feriado encontrado para "${query}"`;
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
     }
 
     /**
