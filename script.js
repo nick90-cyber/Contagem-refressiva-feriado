@@ -1,80 +1,153 @@
 /**
- * HolidayApp - A simple countdown application for Brazilian holidays.
- * Follows a Class-based modular design pattern.
+ * HolidayService - Handles API communication with BrasilAPI.
+ * Follows the Repository design pattern.
+ */
+class HolidayService {
+    constructor() {
+        this.baseUrl = 'https://brasilapi.com.br/api/feriados/v1';
+    }
+
+    /**
+     * Fetch holidays for a specific year.
+     * @param {number} year 
+     * @returns {Promise<Array>}
+     */
+    async fetchHolidays(year) {
+        try {
+            const response = await fetch(`${this.baseUrl}/${year}`);
+            if (!response.ok) throw new Error('Falha ao buscar feriados');
+            return await response.json();
+        } catch (error) {
+            console.error(`Erro ao buscar feriados de ${year}:`, error);
+            return null;
+        }
+    }
+}
+
+/**
+ * HolidayApp - A countdown application for Brazilian holidays.
+ * Refactored to use HolidayService and handle asynchronous data.
  */
 class HolidayApp {
-    constructor(data) {
-        this.holidaysData = data;
+    constructor() {
+        this.service = new HolidayService();
+        this.holidaysCache = {};
         this.intervals = {};
         this.currentYear = new Date().getFullYear();
-        if (!this.holidaysData[this.currentYear]) this.currentYear = 2024;
 
         this.container = document.getElementById('holiday-container');
         this.init();
     }
 
     /**
-     * Initialize the application by rendering all holiday lists.
+     * Initialize the application.
      */
-    init() {
-        Object.keys(this.holidaysData).forEach(year => {
-            const list = document.createElement('div');
-            list.id = `list-${year}`;
-            list.className = 'holiday-list';
+    async init() {
+        this.showLoading();
+        await this.loadYear(this.currentYear);
+        this.renderYearButtons();
+    }
 
-            this.holidaysData[year].forEach((holiday, idx) => {
-                const item = document.createElement('div');
-                item.className = 'holiday-item';
-                item.innerHTML = `
-                    <div class="holiday-info">
-                        <span class="holiday-name">${holiday.name}</span>
-                        <span class="holiday-date">${this.formatDate(holiday.date)}</span>
-                    </div>
-                    <div class="countdown">
-                        <span class="label">Faltam</span>
-                        <span class="timer" id="timer-${year}-${idx}">--d --h --m --s</span>
-                    </div>
-                `;
-                list.appendChild(item);
-            });
+    /**
+     * Render the year navigation buttons.
+     */
+    renderYearButtons() {
+        const nav = document.querySelector('.year-nav');
+        nav.innerHTML = '';
+        const years = [2024, 2025, 2026, 2027];
 
-            this.container.appendChild(list);
+        years.forEach(year => {
+            const btn = document.createElement('button');
+            btn.id = `btn-${year}`;
+            btn.textContent = year;
+            btn.onclick = () => this.changeYear(year);
+            if (year === this.currentYear) btn.classList.add('active');
+            nav.appendChild(btn);
         });
-
-        // Start with the closest relevant year
-        this.changeYear(this.currentYear);
     }
 
     /**
-     * Format a date string into a localized long format.
+     * Load and render holidays for a specific year.
      */
-    formatDate(dateStr) {
-        const d = new Date(dateStr + 'T00:00:00');
-        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-    }
+    async loadYear(year) {
+        if (!this.holidaysCache[year]) {
+            this.showLoading();
+            const data = await this.service.fetchHolidays(year);
+            if (data) {
+                this.holidaysCache[year] = data;
+            } else {
+                this.showError(`Não foi possível carregar os feriados de ${year}.`);
+                return;
+            }
+        }
 
-    /**
-     * Switch the visible year and start its countdowns.
-     */
-    changeYear(year) {
+        this.renderHolidays(year);
         this.currentYear = year;
-        document.querySelectorAll('.holiday-list').forEach(l => l.classList.remove('active'));
-        document.querySelectorAll('.year-nav button').forEach(b => b.classList.remove('active'));
-
-        const activeList = document.getElementById(`list-${year}`);
-        const activeBtn = document.getElementById(`btn-${year}`);
-
-        if (activeList) activeList.classList.add('active');
-        if (activeBtn) activeBtn.classList.add('active');
-
+        this.updateActiveButton(year);
         this.startAll();
     }
 
     /**
-     * Update a single timer element based on the remaining time.
+     * Render the holiday items for the given year.
+     */
+    renderHolidays(year) {
+        this.container.innerHTML = '';
+        const list = document.createElement('div');
+        list.className = 'holiday-list active';
+
+        this.holidaysCache[year].forEach((holiday, idx) => {
+            const item = document.createElement('div');
+            item.className = 'holiday-item';
+            item.innerHTML = `
+                <div class="holiday-info">
+                    <span class="holiday-name">${holiday.name}</span>
+                    <span class="holiday-date">${this.formatDate(holiday.date)}</span>
+                </div>
+                <div class="countdown">
+                    <span class="label">Faltam</span>
+                    <span class="timer" id="timer-${year}-${idx}">--d --h --m --s</span>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+
+        this.container.appendChild(list);
+    }
+
+    /**
+     * Format a date string into a localized format.
+     */
+    formatDate(dateStr) {
+        // Handle YYYY-MM-DD
+        const [year, month, day] = dateStr.split('-');
+        const d = new Date(year, month - 1, day);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+    /**
+     * Switch the visible year.
+     */
+    async changeYear(year) {
+        if (this.currentYear === year && this.holidaysCache[year]) return;
+        await this.loadYear(year);
+    }
+
+    /**
+     * Update navigation button styles.
+     */
+    updateActiveButton(year) {
+        document.querySelectorAll('.year-nav button').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-${year}`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    /**
+     * Update a single timer element.
      */
     updateTimer(year, idx) {
-        const target = new Date(this.holidaysData[year][idx].date + 'T00:00:00');
+        const holiday = this.holidaysCache[year][idx];
+        const [y, m, d] = holiday.date.split('-');
+        const target = new Date(y, m - 1, d);
         const now = new Date();
         const diff = target - now;
         const el = document.getElementById(`timer-${year}-${idx}`);
@@ -87,20 +160,22 @@ class HolidayApp {
             return;
         }
 
-        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
-        el.textContent = `${d}d ${h}h ${m}m ${s}s`;
+        el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
     }
 
     /**
-     * Start countdowns for all holidays in the current year.
+     * Start countdowns for the current year.
      */
     startAll() {
         this.pauseAll();
-        this.holidaysData[this.currentYear].forEach((_, idx) => {
+        if (!this.holidaysCache[this.currentYear]) return;
+
+        this.holidaysCache[this.currentYear].forEach((_, idx) => {
             const key = `${this.currentYear}-${idx}`;
             this.updateTimer(this.currentYear, idx);
             this.intervals[key] = setInterval(() => this.updateTimer(this.currentYear, idx), 1000);
@@ -108,7 +183,7 @@ class HolidayApp {
     }
 
     /**
-     * Clear all active intervals.
+     * Clear all intervals.
      */
     pauseAll() {
         Object.values(this.intervals).forEach(clearInterval);
@@ -116,72 +191,35 @@ class HolidayApp {
     }
 
     /**
-     * Reset all timers to their initial state.
+     * Reset timers UI.
      */
     resetAll() {
         this.pauseAll();
         document.querySelectorAll('.timer').forEach(el => el.textContent = '--d --h --m --s');
     }
-}
 
-// Holiday Data Definition
-const HOLIDAYS_DATA = {
-    2024: [
-        { name: 'Ano Novo', date: '2024-01-01' },
-        { name: 'Carnaval', date: '2024-02-13' },
-        { name: 'Sexta-feira Santa', date: '2024-03-29' },
-        { name: 'Tiradentes', date: '2024-04-21' },
-        { name: 'Dia do Trabalho', date: '2024-05-01' },
-        { name: 'Corpus Christi', date: '2024-05-30' },
-        { name: 'Independência', date: '2024-09-07' },
-        { name: 'Nossa Srª Aparecida', date: '2024-10-12' },
-        { name: 'Finados', date: '2024-11-02' },
-        { name: 'Proclamação da República', date: '2024-11-15' },
-        { name: 'Consciência Negra', date: '2024-11-20' },
-        { name: 'Natal', date: '2024-12-25' }
-    ],
-    2025: [
-        { name: 'Ano Novo', date: '2025-01-01' },
-        { name: 'Carnaval', date: '2025-03-04' },
-        { name: 'Sexta-feira Santa', date: '2025-04-18' },
-        { name: 'Tiradentes', date: '2025-04-21' },
-        { name: 'Dia do Trabalho', date: '2025-05-01' },
-        { name: 'Corpus Christi', date: '2025-06-19' },
-        { name: 'Independência', date: '2025-09-07' },
-        { name: 'Nossa Srª Aparecida', date: '2025-10-12' },
-        { name: 'Finados', date: '2025-11-02' },
-        { name: 'Proclamação da República', date: '2025-11-15' },
-        { name: 'Consciência Negra', date: '2025-11-20' },
-        { name: 'Natal', date: '2025-12-25' }
-    ],
-    2026: [
-        { name: 'Ano Novo', date: '2026-01-01' },
-        { name: 'Carnaval', date: '2026-02-17' },
-        { name: 'Tiradentes', date: '2026-04-21' },
-        { name: 'Dia do Trabalho', date: '2026-05-01' },
-        { name: 'Independência', date: '2026-09-07' },
-        { name: 'Nossa Srª Aparecida', date: '2026-10-12' },
-        { name: 'Natal', date: '2026-12-25' }
-    ],
-    2027: [
-        { name: 'Ano Novo', date: '2027-01-01' },
-        { name: 'Carnaval', date: '2027-02-09' },
-        { name: 'Tiradentes', date: '2027-04-21' },
-        { name: 'Dia do Trabalho', date: '2027-05-01' },
-        { name: 'Independência', date: '2027-09-07' },
-        { name: 'Nossa Srª Aparecida', date: '2027-10-12' },
-        { name: 'Natal', date: '2027-12-25' }
-    ]
-};
+    showLoading() {
+        this.container.innerHTML = '<div class="status-msg">Carregando feriados...</div>';
+    }
+
+    showError(msg) {
+        this.container.innerHTML = `<div class="status-msg error">${msg}</div>`;
+    }
+
+    showStatus(msg) {
+        this.container.innerHTML = `<div class="status-msg">${msg}</div>`;
+    }
+}
 
 // Application Bootstrap
 let app;
 window.onload = () => {
-    app = new HolidayApp(HOLIDAYS_DATA);
+    app = new HolidayApp();
 };
 
-// Global helper functions to maintain compatibility with existing HTML onclicks
+// Global helper functions
 function changeYear(year) { app.changeYear(year); }
 function startAll() { app.startAll(); }
 function pauseAll() { app.pauseAll(); }
 function resetAll() { app.resetAll(); }
+
